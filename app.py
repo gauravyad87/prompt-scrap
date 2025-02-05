@@ -1,4 +1,5 @@
-import gradio as gr
+from fastapi import FastAPI
+from pydantic import BaseModel
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -7,6 +8,11 @@ import time
 
 CHROME_PATH = "/usr/bin/google-chrome-stable"
 CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
+
+app = FastAPI()
+
+class URLRequest(BaseModel):
+    url: str
 
 def extract_chatgpt_prompts(url):
     chrome_options = Options()
@@ -26,15 +32,8 @@ def extract_chatgpt_prompts(url):
     prompts = [elem.text for elem in driver.find_elements(By.CLASS_NAME, "whitespace-pre-wrap")]
 
     driver.quit()
-    return prompts if prompts else ["No prompts found"]
+    return {"prompts": prompts if prompts else ["No prompts found"]}
 
-iface = gr.Interface(
-    fn=extract_chatgpt_prompts,
-    inputs=gr.Textbox(label="Enter ChatGPT Share Link"),
-    outputs=gr.JSON(label="Extracted Prompts"),
-    title="ChatGPT Prompt Extractor",
-    description="Paste a ChatGPT share link to extract user prompts."
-)
-
-if __name__ == "__main__":
-    iface.launch(server_name="0.0.0.0", server_port=8080)
+@app.post("/extract-prompts")
+async def get_prompts(request: URLRequest):
+    return extract_chatgpt_prompts(request.url)
