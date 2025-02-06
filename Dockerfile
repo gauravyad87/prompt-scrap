@@ -14,7 +14,7 @@ RUN wget -q -O google-chrome.deb https://dl.google.com/linux/direct/google-chrom
 RUN chmod +x /usr/bin/google-chrome-stable && chmod +x /usr/bin/chromedriver
 
 COPY requirements.txt requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt 
 
 COPY . .
 
